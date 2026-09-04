@@ -367,7 +367,6 @@ function switchTab(tabName) {
     document.getElementById(`panel-${tabName}`).classList.add('active');
 
 
-    
     if (tabName === 'matches' && matchViz) {
         setTimeout(() => matchViz.draw(), 100);
     }

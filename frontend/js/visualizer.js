@@ -251,7 +251,6 @@ class DistributionVisualizer {
         this.ctx.textAlign = 'center';
         this.ctx.fillStyle = '#94a3b8';
 
-        
         const statsText = [
             `Coverage: ${(stats.coverage * 100).toFixed(1)}%`,
             `Uniformity: ${(stats.uniformity_score * 100).toFixed(1)}%`,

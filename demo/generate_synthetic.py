@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 from pathlib import Path
 
-
 def generate_lunar_surface(width=1024, height=1024, num_craters=80, seed=42):
     rng = np.random.RandomState(seed)
     surface = np.zeros((height, width), dtype=np.float64)
