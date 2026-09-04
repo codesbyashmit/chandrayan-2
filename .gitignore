@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+env.bak/
+venv.bak/
+.env
+
+# Demo assets and test results
+demo/sample_images/
+backend/uploads/
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary scripts
+remove_comments.py

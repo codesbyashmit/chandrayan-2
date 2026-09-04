@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lunar Image Registration System — Multi-modal, Sun angle & scale invariant image correspondence using Chandrayaan-2 optical images. SIH 2026 Problem Statement 26166.">
+    <title>LunarReg — Chandrayaan-2 Image Registration | SIH 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+        <canvas id="particles-canvas"></canvas>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="24" cy="24" r="20" stroke="url(#grad1)" stroke-width="2.5" fill="none"/>
+                        <circle cx="24" cy="24" r="12" stroke="url(#grad1)" stroke-width="1.5" fill="none" opacity="0.5"/>
+                        <circle cx="18" cy="20" r="4" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>
+                        <circle cx="30" cy="16" r="2.5" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                        <circle cx="28" cy="28" r="5" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                        <circle cx="16" cy="30" r="2" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="0" y1="0" x2="48" y2="48">
+                                <stop offset="0%" stop-color="#60A5FA"/>
+                                <stop offset="100%" stop-color="#A78BFA"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>LunarReg</h1>
+                    <span class="tagline">Chandrayaan-2 Image Registration</span>
+                </div>
+            </div>
+            <div class="header-badges">
+                <span class="badge badge-isro">ISRO</span>
+                <span class="badge badge-sih">SIH 2026</span>
+                <span class="badge badge-ps">PS-26166</span>
+                <div class="gpu-status" id="gpu-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Checking GPU...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="app-main">
+        <section class="upload-section" id="upload-section">
+            <div class="section-header">
+                <h2>
+                    <span class="step-num">01</span>
+                    Upload Images
+                </h2>
+                <p class="section-desc">Upload source (moving) and reference (fixed) lunar images for registration</p>
+            </div>
+            <div class="upload-grid">
+                <div class="upload-card" id="source-upload-card">
+                    <div class="upload-zone" id="source-drop-zone">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 64 64" fill="none"><path d="M32 8L8 32h16v24h16V32h16L32 8z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                        </div>
+                        <div class="upload-text">
+                            <span class="upload-label">Source Image (Moving)</span>
+                            <span class="upload-hint">Drag & drop or click to browse</span>
+                            <span class="upload-formats">PNG, JPG, TIFF, BMP</span>
+                        </div>
+                        <input type="file" id="source-input" accept="image/*" hidden>
+                    </div>
+                    <div class="upload-preview" id="source-preview" style="display:none;">
+                        <img id="source-preview-img" alt="Source image preview">
+                        <div class="preview-overlay">
+                            <button class="btn-remove" onclick="removeImage('source')">✕ Remove</button>
+                            <span class="preview-info" id="source-info"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload-card" id="reference-upload-card">
+                    <div class="upload-zone" id="reference-drop-zone">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 64 64" fill="none"><rect x="8" y="8" width="48" height="48" rx="4" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="24" cy="24" r="6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8 44l16-16 12 12 8-8 12 12" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                        </div>
+                        <div class="upload-text">
+                            <span class="upload-label">Reference Image (Fixed)</span>
+                            <span class="upload-hint">Drag & drop or click to browse</span>
+                            <span class="upload-formats">PNG, JPG, TIFF, BMP</span>
+                        </div>
+                        <input type="file" id="reference-input" accept="image/*" hidden>
+                    </div>
+                    <div class="upload-preview" id="reference-preview" style="display:none;">
+                        <img id="reference-preview-img" alt="Reference image preview">
+                        <div class="preview-overlay">
+                            <button class="btn-remove" onclick="removeImage('reference')">✕ Remove</button>
+                            <span class="preview-info" id="reference-info"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="config-section" id="config-section">
+            <div class="section-header">
+                <h2>
+                    <span class="step-num">02</span>
+                    Pipeline Configuration
+                </h2>
+                <p class="section-desc">Select algorithms and parameters for the registration pipeline</p>
+            </div>
+            <div class="config-grid">
+                <div class="config-group">
+                    <label class="config-label">Preprocessing</label>
+                    <select id="config-preprocessing" class="config-select">
+                        <option value="auto" selected>Auto (MSR + CLAHE)</option>
+                        <option value="retinex">Multi-Scale Retinex</option>
+                        <option value="clahe">CLAHE Only</option>
+                        <option value="wallis">Wallis Filter</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <label class="config-label">Feature Detector</label>
+                    <select id="config-detector" class="config-select">
+                        <option value="sift" selected>SIFT (Scale Invariant)</option>
+                        <option value="akaze">AKAZE (Non-linear)</option>
+                        <option value="orb">ORB (Fast)</option>
+                        <option value="superpoint">SuperPoint (Deep Learning)</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <label class="config-label">Matcher</label>
+                    <select id="config-matcher" class="config-select">
+                        <option value="flann" selected>FLANN (Fast)</option>
+                        <option value="bf">Brute-Force</option>
+                        <option value="lightglue">LightGlue (Deep Learning)</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <label class="config-label">Geometric Model</label>
+                    <select id="config-geometric" class="config-select">
+                        <option value="homography" selected>Homography (8-DOF)</option>
+                        <option value="affine">Affine (6-DOF)</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <label class="config-label">Max Keypoints</label>
+                    <input type="range" id="config-keypoints" class="config-slider" min="500" max="10000" value="5000" step="500">
+                    <span class="slider-value" id="keypoints-value">5000</span>
+                </div>
+                <div class="config-group">
+                    <label class="config-label">RANSAC Threshold</label>
+                    <input type="range" id="config-ransac" class="config-slider" min="1" max="20" value="5" step="0.5">
+                    <span class="slider-value" id="ransac-value">5.0</span>
+                </div>
+                <div class="config-group config-checkbox-group">
+                    <label class="config-checkbox">
+                        <input type="checkbox" id="config-subpixel" checked>
+                        <span class="checkmark"></span>
+                        Sub-pixel Refinement
+                    </label>
+                </div>
+                <div class="config-group config-checkbox-group">
+                    <label class="config-checkbox">
+                        <input type="checkbox" id="config-uniform" checked>
+                        <span class="checkmark"></span>
+                        Uniform Distribution
+                    </label>
+                </div>
+            </div>
+            <div class="run-container">
+                <button class="btn-run" id="btn-run" onclick="runPipeline()" disabled>
+                    <span class="btn-run-icon">▶</span>
+                    <span class="btn-run-text">Run Registration Pipeline</span>
+                </button>
+            </div>
+        </section>
+        <section class="progress-section" id="progress-section" style="display:none;">
+            <div class="progress-card">
+                <div class="progress-spinner"></div>
+                <div class="progress-info">
+                    <h3 id="progress-title">Processing...</h3>
+                    <p id="progress-detail">Initializing pipeline</p>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+        </section>
+        <section class="results-section" id="results-section" style="display:none;">
+            <div class="section-header">
+                <h2>
+                    <span class="step-num">03</span>
+                    Registration Results
+                </h2>
+            </div>
+            <div class="metrics-dashboard" id="metrics-dashboard">
+                <div class="metric-card metric-primary" id="metric-rmse">
+                    <span class="metric-value" data-metric="rmse">—</span>
+                    <span class="metric-label">RMSE (px)</span>
+                    <div class="metric-bar"><div class="metric-fill"></div></div>
+                </div>
+                <div class="metric-card" id="metric-inlier-ratio">
+                    <span class="metric-value" data-metric="inlier_ratio">—</span>
+                    <span class="metric-label">Inlier Ratio</span>
+                    <div class="metric-bar"><div class="metric-fill"></div></div>
+                </div>
+                <div class="metric-card" id="metric-matches">
+                    <span class="metric-value" data-metric="final_match_count">—</span>
+                    <span class="metric-label">Final Matches</span>
+                    <div class="metric-bar"><div class="metric-fill"></div></div>
+                </div>
+                <div class="metric-card" id="metric-ncc">
+                    <span class="metric-value" data-metric="ncc">—</span>
+                    <span class="metric-label">NCC</span>
+                    <div class="metric-bar"><div class="metric-fill"></div></div>
+                </div>
+                <div class="metric-card" id="metric-ssim">
+                    <span class="metric-value" data-metric="ssim">—</span>
+                    <span class="metric-label">SSIM</span>
+                    <div class="metric-bar"><div class="metric-fill"></div></div>
+                </div>
+                <div class="metric-card" id="metric-coverage">
+                    <span class="metric-value" data-metric="coverage">—</span>
+                    <span class="metric-label">Coverage</span>
+                    <div class="metric-bar"><div class="metric-fill"></div></div>
+                </div>
+                <div class="metric-card" id="metric-subpx">
+                    <span class="metric-value" data-metric="sub_pixel_percentage">—</span>
+                    <span class="metric-label">Sub-px %</span>
+                    <div class="metric-bar"><div class="metric-fill"></div></div>
+                </div>
+                <div class="metric-card" id="metric-time">
+                    <span class="metric-value" data-metric="total_time">—</span>
+                    <span class="metric-label">Total Time</span>
+                    <div class="metric-bar"><div class="metric-fill"></div></div>
+                </div>
+            </div>
+            <div class="viz-tabs">
+                <button class="viz-tab active" data-tab="matches" onclick="switchTab('matches')">
+                    <span class="tab-icon">⬡</span> Match Points
+                </button>
+                <button class="viz-tab" data-tab="registered" onclick="switchTab('registered')">
+                    <span class="tab-icon">◎</span> Registered Image
+                </button>
+                <button class="viz-tab" data-tab="checkerboard" onclick="switchTab('checkerboard')">
+                    <span class="tab-icon">▦</span> Checkerboard
+                </button>
+                <button class="viz-tab" data-tab="difference" onclick="switchTab('difference')">
+                    <span class="tab-icon">△</span> Difference Map
+                </button>
+                <button class="viz-tab" data-tab="preprocessed" onclick="switchTab('preprocessed')">
+                    <span class="tab-icon">◈</span> Preprocessed
+                </button>
+                <button class="viz-tab" data-tab="distribution" onclick="switchTab('distribution')">
+                    <span class="tab-icon">⊞</span> Distribution
+                </button>
+            </div>
+            <div class="viz-container">
+                <div class="viz-panel active" id="panel-matches">
+                    <div class="viz-toolbar">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="toggle-inliers" checked onchange="updateMatchViz()">
+                            <span>Show Inliers</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="toggle-outliers" onchange="updateMatchViz()">
+                            <span>Show Outliers</span>
+                        </label>
+                    </div>
+                    <div class="viz-image-wrapper">
+                        <canvas id="match-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="viz-panel" id="panel-registered">
+                    <div class="viz-image-wrapper">
+                        <img id="registered-image" alt="Registered (warped) source image">
+                    </div>
+                </div>
+                <div class="viz-panel" id="panel-checkerboard">
+                    <div class="viz-image-wrapper">
+                        <img id="checkerboard-image" alt="Checkerboard overlay">
+                    </div>
+                </div>
+                <div class="viz-panel" id="panel-difference">
+                    <div class="viz-image-wrapper">
+                        <img id="difference-image" alt="Difference heatmap">
+                    </div>
+                </div>
+                <div class="viz-panel" id="panel-preprocessed">
+                    <div class="preprocessed-grid">
+                        <div>
+                            <h4>Source — Preprocessed</h4>
+                            <img id="source-preprocessed-img" alt="Preprocessed source">
+                        </div>
+                        <div>
+                            <h4>Reference — Preprocessed</h4>
+                            <img id="reference-preprocessed-img" alt="Preprocessed reference">
+                        </div>
+                    </div>
+                </div>
+                <div class="viz-panel" id="panel-distribution">
+                    <div class="viz-image-wrapper">
+                        <canvas id="distribution-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-section">
+                <h3>Detailed Metrics</h3>
+                <div class="metrics-table-container">
+                    <table class="metrics-table" id="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="metrics-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="detail-section">
+                <h3>Pipeline Timing</h3>
+                <div class="timing-bars" id="timing-bars"></div>
+            </div>
+            <div class="detail-section">
+                <h3>Transformation Matrix</h3>
+                <pre class="matrix-display" id="transform-display"></pre>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/visualizer.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

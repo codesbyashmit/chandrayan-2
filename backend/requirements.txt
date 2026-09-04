@@ -1,0 +1,21 @@
+# Core image processing
+opencv-python-headless>=4.8.0
+opencv-contrib-python-headless>=4.8.0
+numpy>=1.24.0
+scipy>=1.11.0
+scikit-image>=0.21.0
+
+# Web server
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# Image I/O
+tifffile>=2023.7.0
+Pillow>=10.0.0
+
+# Deep learning (SuperPoint + LightGlue)
+torch>=2.1.0
+torchvision>=0.16.0
+
+# Visualization helpers
+matplotlib>=3.7.0
