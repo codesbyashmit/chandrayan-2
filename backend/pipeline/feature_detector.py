@@ -4,8 +4,8 @@ import numpy as np
 class FeatureDetector:
 
     def __init__(self, config):
-        self.method = config.get('method', 'sift')
-        self.max_keypoints = config.get('max_keypoints', 5000)
+        self.method = config.get('method', 'superpoint')
+        self.max_keypoints = config.get('max_keypoints', 2000)
         self.superpoint_threshold = config.get('superpoint_threshold', 0.005)
         self._superpoint_model = None
         self._device = None

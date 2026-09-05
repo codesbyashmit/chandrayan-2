@@ -4,8 +4,8 @@ import numpy as np
 class Preprocessor:
 
     def __init__(self, config):
-        self.method = config.get('method', 'auto')
-        self.clahe_clip_limit = config.get('clahe_clip_limit', 3.0)
+        self.method = config.get('method', 'clahe_only')
+        self.clahe_clip_limit = config.get('clahe_clip_limit', 2.0)
         self.clahe_grid_size = config.get('clahe_grid_size', 8)
         self.retinex_scales = config.get('retinex_scales', [15, 80, 250])
 
@@ -21,7 +21,7 @@ class Preprocessor:
         elif self.method == 'wallis':
             return self._apply_wallis(image)
         elif self.method == 'auto':
-            return self._apply_auto(image)
+            return self._apply_clahe(image)
         else:
             return image
 

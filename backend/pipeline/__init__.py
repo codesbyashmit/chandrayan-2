@@ -11,7 +11,7 @@ def run_pipeline(source_path, reference_path, config=None):
     import cv2
     import numpy as np
     import time
-    default_config = {'preprocessing': {'method': 'auto', 'clahe_clip_limit': 3.0, 'clahe_grid_size': 8, 'retinex_scales': [15, 80, 250]}, 'feature_detection': {'method': 'sift', 'max_keypoints': 5000, 'superpoint_threshold': 0.005}, 'matching': {'method': 'flann', 'ratio_threshold': 0.75, 'cross_check': True}, 'geometric': {'model': 'homography', 'ransac_threshold': 5.0, 'max_iterations': 10000, 'confidence': 0.999}, 'subpixel': {'enabled': True, 'method': 'phase_correlation', 'window_size': 21}, 'uniform_distribution': {'enabled': True, 'grid_size': 8, 'min_matches_per_cell': 2}}
+    default_config = {'preprocessing': {'method': 'clahe_only', 'clahe_clip_limit': 2.0, 'clahe_grid_size': 8, 'retinex_scales': [15, 80, 250]}, 'feature_detection': {'method': 'superpoint', 'max_keypoints': 2000, 'superpoint_threshold': 0.005}, 'matching': {'method': 'flann', 'ratio_threshold': 0.75, 'cross_check': True}, 'geometric': {'model': 'homography', 'ransac_threshold': 5.0, 'max_iterations': 10000, 'confidence': 0.999}, 'subpixel': {'enabled': True, 'method': 'phase_correlation', 'window_size': 21}, 'uniform_distribution': {'enabled': True, 'grid_size': 8, 'min_matches_per_cell': 2}}
     if config:
         for key in config:
             if key in default_config:

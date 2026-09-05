@@ -16,6 +16,7 @@ Pillow>=10.0.0
 # Deep learning (SuperPoint + LightGlue)
 torch>=2.1.0
 torchvision>=0.16.0
+torchaudio>=2.1.0
 
 # Visualization helpers
 matplotlib>=3.7.0
